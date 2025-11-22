@@ -1,0 +1,592 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Imperium Dental Lab | Reservasi Online</title>
+<meta name="description" content="Sistem Reservasi & Pelayanan Gigi Modern - Imperium Dental Lab">
+
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🦷</text></svg>">
+
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<style>
+  :root {
+    --primary: #8b5cf6; /* Violet */
+    --secondary: #06b6d4; /* Cyan */
+    --accent: #ec4899;    /* Pink */
+    --gold: #f59e0b;      /* Gold */
+    --bg-dark: #0f172a;
+    --glass-bg: rgba(255, 255, 255, 0.03);
+    --glass-border: rgba(255, 255, 255, 0.1);
+    --text-light: #f8fafc;
+  }
+
+  * { box-sizing: border-box; font-family: 'Outfit', sans-serif; }
+  
+  body, html {
+    margin: 0; padding: 0; height: 100%; 
+    background: var(--bg-dark); color: var(--text-light);
+    overflow-x: hidden;
+  }
+
+  /* --- BACKGROUND ART (Aman untuk GitHub karena pakai CSS & SVG Data) --- */
+  .bg-container { position: fixed; inset: 0; z-index: -1; overflow: hidden; background: #0f172a; }
+  
+  .blob { position: absolute; border-radius: 50%; filter: blur(80px); opacity: 0.5; animation: floatBlob 10s infinite ease-in-out alternate; }
+  .blob-1 { width: 500px; height: 500px; background: var(--primary); top: -10%; left: -10%; }
+  .blob-2 { width: 400px; height: 400px; background: var(--secondary); bottom: -10%; right: -10%; animation-delay: 2s; }
+  
+  /* Pola Garis Kaligrafi Abstrak */
+  .calligraphy-lines {
+    position: absolute; inset: 0; opacity: 0.15;
+    /* Gambar SVG dikonversi ke base64 agar tidak perlu upload gambar terpisah */
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 800 800' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' stroke='%23f59e0b' stroke-width='1.5'%3E%3Cpath d='M769 229L1037 260.9M927 880L731 737 520 660 309 538 40 599 295 764 126 598 79 416 458 405 653 348 909 550 912 228 567 91 306 203 49 453 105 275 488 213 219 216 266 73 393 286 489 821 381 837 284 868 144 866 27 899 44 761 188 679 315 784 443 670 550 782 713 642 792 763 949 629 987 469 863 397 659 537 516 489 368 612 274 441 258 318 345 433 231 516 77 629 186 755 306 853 428 925 550 976 672 1006 794 1015 916 1002 1038 967 1159 911 1278 833 1395 733 1509 613 1619 473 1725 313 1827 133 1925 -67 2019 -287 2109 -527 2195 -787'/%3E%3C/g%3E%3C/svg%3E");
+    background-size: cover; pointer-events: none;
+  }
+
+  @keyframes floatBlob { 0% { transform: translate(0, 0) scale(1); } 100% { transform: translate(20px, -20px) scale(1.1); } }
+
+  /* --- UTILS --- */
+  .hidden { display: none !important; }
+  
+  /* --- WA FLOATING BUTTON --- */
+  .wa-float {
+    position: fixed; bottom: 20px; right: 20px;
+    background: #25D366; color: white;
+    width: 60px; height: 60px; border-radius: 50%;
+    display: flex; justify-content: center; align-items: center;
+    font-size: 30px; box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+    z-index: 200; text-decoration: none;
+    transition: transform 0.3s; animation: pulse 2s infinite;
+  }
+  .wa-float:hover { transform: scale(1.1); }
+  @keyframes pulse {
+    0% { box-shadow: 0 0 0 0 rgba(37, 211, 102, 0.7); }
+    70% { box-shadow: 0 0 0 15px rgba(37, 211, 102, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(37, 211, 102, 0); }
+  }
+
+  /* --- LAYOUT --- */
+  .overlay { position: fixed; inset: 0; display: flex; justify-content: center; align-items: center; z-index: 100; padding: 20px; backdrop-filter: blur(5px); }
+  .landing-wrapper { display: flex; gap: 20px; width: 100%; max-width: 1200px; height: 85vh; animation: fadeInUp 0.8s ease-out; }
+  .landing-card { flex: 1; background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(20px); border: 1px solid var(--glass-border); border-radius: 24px; padding: 30px; display: flex; flex-direction: column; box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
+  
+  /* Pricelist Scroll */
+  .pricelist-section { overflow-y: auto; }
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: rgba(255,255,255,0.02); }
+  ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 10px; }
+  
+  .price-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 0.85rem; }
+  .price-name { color: #cbd5e1; }
+  .price-val { color: var(--secondary); font-weight: 600; text-align: right; }
+  .price-cat { margin-top: 15px; margin-bottom: 8px; color: var(--gold); font-weight: 700; text-transform: uppercase; letter-spacing: 1px; font-size: 0.8rem; border-bottom: 1px dashed rgba(245, 158, 11, 0.3); padding-bottom: 4px; }
+
+  /* --- FORMS --- */
+  .login-box { text-align: center; justify-content: center; }
+  input, select { width: 100%; padding: 12px; margin-bottom: 12px; border-radius: 10px; border: 1px solid var(--glass-border); background: rgba(0, 0, 0, 0.3); color: white; outline: none; transition: 0.3s; }
+  input:focus, select:focus { border-color: var(--primary); box-shadow: 0 0 15px rgba(139, 92, 246, 0.2); }
+  
+  input[type="time"]::-webkit-calendar-picker-indicator, input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(1); cursor: pointer; }
+
+  button { width: 100%; padding: 12px; border-radius: 10px; border: 0; background: linear-gradient(135deg, var(--primary), var(--secondary)); color: white; font-weight: 600; cursor: pointer; margin-top: 10px; transition: 0.2s; }
+  button:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(139, 92, 246, 0.4); }
+  .btn-danger { background: linear-gradient(135deg, #ef4444, #b91c1c) !important; width: auto; padding: 6px 12px; font-size: 0.8rem; }
+  .text-link { background: none; color: #94a3b8; font-size: 0.9rem; text-decoration: underline; margin-top: 15px; display: inline-block; }
+
+  /* --- DASHBOARD --- */
+  .app { position: relative; z-index: 10; display: flex; gap: 20px; padding: 20px; max-width: 1400px; margin: 0 auto; min-height: 100vh; }
+  .left { width: 380px; flex-shrink: 0; }
+  .right { flex: 1; display: flex; flex-direction: column; gap: 20px; }
+  .dash-card { background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(16px); border: 1px solid var(--glass-border); border-radius: 16px; padding: 24px; box-shadow: 0 4px 20px rgba(0,0,0,0.2); }
+
+  .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 15px; }
+  .stat-box { background: rgba(255,255,255,0.05); padding: 15px; border-radius: 12px; text-align: center; }
+  .stat-val { font-size: 1.4rem; font-weight: 700; color: var(--secondary); margin-top: 5px; }
+
+  table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 0.85rem; }
+  th { text-align: left; color: #94a3b8; padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.1); }
+  td { padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+  
+  .badge { padding: 5px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; display: inline-block; }
+  .badge-Menunggu { background: rgba(245, 158, 11, 0.2); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.3); }
+  .badge-Konfirmasi { background: rgba(59, 130, 246, 0.2); color: #3b82f6; border: 1px solid rgba(59, 130, 246, 0.3); }
+  .badge-Selesai { background: rgba(16, 185, 129, 0.2); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3); }
+
+  @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+  .animate-in { animation: fadeInUp 0.6s ease-out forwards; }
+
+  @media(max-width: 900px) {
+    .landing-wrapper { flex-direction: column-reverse; height: auto; margin: 50px 0; }
+    .landing-card { min-height: 400px; }
+    .app { flex-direction: column; }
+    .left { width: 100%; }
+    .wa-float { width: 50px; height: 50px; font-size: 24px; }
+  }
+  
+  body.patientMode .admin-only { display: none !important; }
+</style>
+</head>
+<body>
+
+<div class="bg-container">
+  <div class="blob blob-1"></div>
+  <div class="blob blob-2"></div>
+  <div class="calligraphy-lines"></div>
+</div>
+
+<a href="https://wa.me/6282271543811?text=Halo%20Imperium%20Lab,%20saya%20mau%20tanya%20tentang%20layanan%20gigi..." target="_blank" class="wa-float" title="Chat WhatsApp">
+  <i class="fab fa-whatsapp"></i>
+</a>
+
+<div id="landingOverlay" class="overlay">
+  <div class="landing-wrapper">
+    
+    <div class="landing-card pricelist-section">
+      <h2 style="color: var(--text-light); border-bottom: 1px solid var(--glass-border); padding-bottom: 15px; margin-top: 0;">
+        <i class="fas fa-clipboard-list" style="color: var(--gold)"></i> Daftar Layanan
+      </h2>
+      
+      <div class="price-cat">Scaling Gigi</div>
+      <div class="price-item"><span class="price-name">Scaling Umum</span> <span class="price-val">Rp 200.000</span></div>
+      <div class="price-item"><span class="price-name">Scaling Mhs/Siswa</span> <span class="price-val">Rp 50.000</span></div>
+
+      <div class="price-cat">Akrilik Denture</div>
+      <div class="price-item"><span class="price-name">Plat + 1 Gigi</span> <span class="price-val">Rp 150.000</span></div>
+      <div class="price-item"><span class="price-name">& Next (Tambah Gigi)</span> <span class="price-val">Rp 100.000</span></div>
+      <div class="price-item"><span class="price-name">2 Gigi</span> <span class="price-val">Rp 300.000</span></div>
+      <div class="price-item"><span class="price-name">3 Gigi</span> <span class="price-val">Rp 400.000</span></div>
+      <div class="price-item"><span class="price-name">4 Gigi</span> <span class="price-val">Rp 500.000</span></div>
+      <div class="price-item"><span class="price-name">5 Gigi</span> <span class="price-val">Rp 600.000</span></div>
+      <div class="price-item"><span class="price-name">6 Gigi</span> <span class="price-val">Rp 700.000</span></div>
+      <div class="price-item"><span class="price-name">7 Gigi</span> <span class="price-val">Rp 800.000</span></div>
+      <div class="price-item"><span class="price-name">8 Gigi</span> <span class="price-val">Rp 900.000</span></div>
+      <div class="price-item"><span class="price-name">9 Gigi</span> <span class="price-val">Rp 1.000.000</span></div>
+      <div class="price-item"><span class="price-name">10 Gigi</span> <span class="price-val">Rp 1.100.000</span></div>
+      <div class="price-item"><span class="price-name">Full RA atau RB</span> <span class="price-val">Rp 1.500.000</span></div>
+      <div class="price-item"><span class="price-name">Full RA & RB Comp</span> <span class="price-val">Rp 3.000.000</span></div>
+      <div class="price-item"><span class="price-name">Repair</span> <span class="price-val">Rp 100k - 250k</span></div>
+      <div class="price-item"><span class="price-name">Relaining</span> <span class="price-val">Rp 350.000</span></div>
+      <div class="price-item"><span class="price-name">Rebasing</span> <span class="price-val">Rp 600.000</span></div>
+      <div class="price-item"><span class="price-name">Retainer Busur Labial</span> <span class="price-val">Rp 400.000</span></div>
+
+      <div class="price-cat">Thermosen Denture</div>
+      <div class="price-item"><span class="price-name">Sadel 1 - 2 Gigi</span> <span class="price-val">Rp 550.000</span></div>
+      <div class="price-item"><span class="price-name">Bilateral 1 - 3 Gigi</span> <span class="price-val">Rp 750.000</span></div>
+      <div class="price-item"><span class="price-name">4 - 7 Gigi</span> <span class="price-val">Rp 1.000.000</span></div>
+      <div class="price-item"><span class="price-name">Full RA atau RB</span> <span class="price-val">Rp 1.850.000</span></div>
+      <div class="price-item"><span class="price-name">Full RA & RB Comp</span> <span class="price-val">Rp 3.800.000</span></div>
+
+      <div class="price-cat">Valpast Denture</div>
+      <div class="price-item"><span class="price-name">Sadel 1 - 2 Gigi</span> <span class="price-val">Rp 490.000</span></div>
+      <div class="price-item"><span class="price-name">Bilateral 1 - 3 Gigi</span> <span class="price-val">Rp 590.000</span></div>
+      <div class="price-item"><span class="price-name">4 - 7 Gigi</span> <span class="price-val">Rp 880.000</span></div>
+    </div>
+
+    <div class="landing-card login-box">
+      <div style="margin-bottom: 20px;">
+        <i class="fas fa-tooth fa-3x" style="color: var(--primary); filter: drop-shadow(0 0 10px var(--primary));"></i>
+      </div>
+      <h2 style="font-family: 'Times New Roman', serif; letter-spacing: 1px; color:var(--gold);">IMPERIUM LAB</h2>
+      <p style="color: #94a3b8; margin-bottom: 30px;">Login Pasien & Admin</p>
+
+      <div id="loginFormView">
+        <input id="loginUser" placeholder="Username / Nama Pasien" type="text">
+        <input id="loginPass" placeholder="Password / No. HP" type="password">
+        <button id="loginBtn">Masuk Dashboard <i class="fas fa-arrow-right"></i></button>
+        <div class="error-msg" id="loginError">Data login salah!</div>
+        <button onclick="toggleAuth('register')" class="text-link">Daftar Pasien Baru</button>
+      </div>
+
+      <div id="registerFormView" class="hidden">
+        <input id="regName" placeholder="Nama Lengkap Pasien" type="text">
+        <input id="regPhone" placeholder="Nomor HP (Untuk Password)" type="number">
+        <button id="regCreate">Buat Akun</button>
+        <div class="error-msg" id="regError">Nama sudah terdaftar!</div>
+        <button onclick="toggleAuth('login')" class="text-link">Kembali Login</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="app hidden" id="mainApp">
+  <div class="left">
+    <div class="dash-card animate-in">
+      <div style="display:flex; align-items:center; gap:15px; margin-bottom:20px;">
+        <div style="background:var(--primary); padding:10px; border-radius:10px; color:white;"><i class="fas fa-calendar-check"></i></div>
+        <h3 style="margin:0">Formulir Reservasi</h3>
+      </div>
+
+      <form id="entryForm">
+        <label style="font-size:0.85rem; color:#cbd5e1; margin-bottom:5px; display:block;">Nama Pasien</label>
+        <input id="patientName" type="text" required placeholder="Nama pasien...">
+        
+        <label style="font-size:0.85rem; color:#cbd5e1; margin-bottom:5px; display:block;">No. HP</label>
+        <input id="phone" type="text" placeholder="08xx...">
+        
+        <label style="font-size:0.85rem; color:#cbd5e1; margin-bottom:5px; display:block;">Lokasi Pelayanan</label>
+        <select id="location" style="border:1px solid var(--gold);">
+            <option value="Klinik">Datang ke Klinik</option>
+            <option value="Homecare">Homecare (Di Rumah)</option>
+        </select>
+        
+        <label style="font-size:0.85rem; color:#cbd5e1; margin-bottom:5px; display:block;">Pilih Layanan</label>
+        <select id="service">
+            <option value="" disabled selected>-- Pilih --</option>
+            <optgroup label="Scaling">
+                <option value="sc_umum">Scaling Umum (Rp 200rb)</option>
+                <option value="sc_mhs">Scaling Mhs/Siswa (Rp 50rb)</option>
+            </optgroup>
+            <optgroup label="Akrilik Denture">
+                <option value="ak_1">Plat + 1 Gigi</option>
+                <option value="ak_next">& Next (Tambah Gigi)</option>
+                <option value="ak_2">2 Gigi</option>
+                <option value="ak_3">3 Gigi</option>
+                <option value="ak_4">4 Gigi</option>
+                <option value="ak_5">5 Gigi</option>
+                <option value="ak_6">6 Gigi</option>
+                <option value="ak_7">7 Gigi</option>
+                <option value="ak_8">8 Gigi</option>
+                <option value="ak_9">9 Gigi</option>
+                <option value="ak_10">10 Gigi</option>
+                <option value="ak_full">Full RA atau RB</option>
+                <option value="ak_full_comp">Full RA & RB Comp</option>
+                <option value="ak_repair">Repair (100rb-250rb)</option>
+                <option value="ak_relain">Relaining</option>
+                <option value="ak_rebase">Rebasing</option>
+                <option value="ak_retainer">Retainer Busur Labial</option>
+            </optgroup>
+            <optgroup label="Thermosen Denture">
+                <option value="th_sadel">Sadel 1-2 Gigi</option>
+                <option value="th_bilateral">Bilateral 1-3 Gigi</option>
+                <option value="th_47">4-7 Gigi</option>
+                <option value="th_full">Full RA atau RB</option>
+                <option value="th_full_comp">Full RA & RB Comp</option>
+            </optgroup>
+            <optgroup label="Valpast Denture">
+                <option value="vp_sadel">Sadel 1-2 Gigi</option>
+                <option value="vp_bilateral">Bilateral 1-3 Gigi</option>
+                <option value="vp_47">4-7 Gigi</option>
+            </optgroup>
+        </select>
+        
+        <div style="display:flex; gap:10px; margin-bottom:10px;">
+          <div style="flex:1">
+            <label style="font-size:0.85rem; color:#cbd5e1; display:block; margin-bottom:5px;">Tanggal</label>
+            <input id="date" type="date" required style="margin-bottom:0;">
+          </div>
+          <div style="flex:1">
+            <label style="font-size:0.85rem; color:#cbd5e1; display:block; margin-bottom:5px;">Jam</label>
+            <input id="time" type="time" required style="margin-bottom:0;">
+          </div>
+        </div>
+
+        <div style="margin-bottom:15px;">
+             <label style="font-size:0.85rem; color:#cbd5e1;">Estimasi Harga</label>
+             <input id="displayPrice" type="text" style="background:rgba(255,255,255,0.05); color:var(--secondary); font-weight:bold;">
+             <input type="hidden" id="rawPrice"> 
+        </div>
+
+        <button type="submit"><i class="fab fa-whatsapp"></i> Simpan & Konfirmasi WA</button>
+      </form>
+      
+      <button id="logoutBtn" style="background:transparent; border:1px solid #ef4444; color:#ef4444; margin-top:15px;">
+        <i class="fas fa-sign-out-alt"></i> Logout
+      </button>
+    </div>
+  </div>
+
+  <div class="right">
+    
+    <div class="dash-card animate-in" style="padding:15px 24px; display:flex; justify-content:space-between; align-items:center;">
+      <div>
+        <h2 id="welcomeMsg" style="margin:0; font-size:1.5rem;">Dashboard</h2>
+        <small id="subMsg" style="color:#94a3b8;">Data Reservasi</small>
+      </div>
+      <div class="patientMode admin-only" style="color:var(--gold); font-weight:bold;">Admin Access</div>
+    </div>
+
+    <div class="dash-card animate-in admin-only" style="animation-delay: 0.1s;">
+      <div class="stats-grid">
+        <div class="stat-box">
+          <small>Pasien Hari Ini</small>
+          <div class="stat-val" id="visitsToday">0</div>
+        </div>
+        <div class="stat-box">
+          <small>Omzet Hari Ini</small>
+          <div class="stat-val" id="revToday" style="font-size:1.2rem">Rp0</div>
+        </div>
+        <div class="stat-box">
+          <small>Omzet Bulan Ini</small>
+          <div class="stat-val" id="revMonth" style="font-size:1.2rem">Rp0</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="dash-card animate-in" style="animation-delay: 0.2s; flex:1; display:flex; flex-direction:column;">
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+         <h3 style="margin-top:0"><i class="fas fa-list-alt"></i> Riwayat / Status</h3>
+         <button onclick="render()" style="width:auto; padding:6px 12px; font-size:0.8rem; background:rgba(255,255,255,0.1);"><i class="fas fa-sync"></i></button>
+      </div>
+      
+      <div style="overflow-x: auto;">
+        <table>
+          <thead>
+            <tr>
+              <th>Waktu</th>
+              <th>Nama & Lokasi</th>
+              <th>Layanan</th>
+              <th>Harga</th>
+              <th>Status</th>
+              <th class="admin-only">Aksi Admin</th>
+              <th id="patientActionHeader" class="hidden">Aksi</th>
+            </tr>
+          </thead>
+          <tbody id="entriesTable"></tbody>
+        </table>
+      </div>
+      <div id="emptyMsg" class="hidden" style="text-align:center; padding:20px; color:#64748b;">Belum ada data.</div>
+    </div>
+    
+    <div class="dash-card animate-in admin-only" style="animation-delay: 0.3s;">
+      <h3 style="margin-top:0; font-size:1rem;">Statistik 14 Hari</h3>
+      <div style="height: 200px;">
+        <canvas id="visitChart"></canvas>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  /* ================= CONFIG ================= */
+  const ADMIN_USER = "admin";
+  const ADMIN_PASS = "@lhid@y@h12"; 
+  const WA_NUMBER = "6282271543811"; 
+
+  // DATABASE HARGA
+  const priceMap = {
+    'sc_umum': 200000, 'sc_mhs': 50000,
+    'ak_1': 150000, 'ak_next': 100000,
+    'ak_2': 300000, 'ak_3': 400000, 'ak_4': 500000, 'ak_5': 600000,
+    'ak_6': 700000, 'ak_7': 800000, 'ak_8': 900000, 'ak_9': 1000000, 'ak_10': 1100000,
+    'ak_full': 1500000, 'ak_full_comp': 3000000,
+    'ak_repair': 100000, // Dasar 100k, bisa diedit
+    'ak_relain': 350000, 'ak_rebase': 600000, 'ak_retainer': 400000,
+    'th_sadel': 550000, 'th_bilateral': 750000, 'th_47': 1000000, 
+    'th_full': 1850000, 'th_full_comp': 3800000,
+    'vp_sadel': 490000, 'vp_bilateral': 590000, 'vp_47': 880000
+  };
+
+  // STORAGE
+  const getPatients = () => JSON.parse(localStorage.getItem('patients') || '[]');
+  const savePatients = (d) => localStorage.setItem('patients', JSON.stringify(d));
+  const getEntries = () => JSON.parse(localStorage.getItem('entries') || '[]');
+  const saveEntries = (d) => localStorage.setItem('entries', JSON.stringify(d));
+  const $ = (id) => document.getElementById(id);
+  const formatRp = (n) => 'Rp ' + Number(n).toLocaleString('id-ID');
+
+  // 1. AUTH
+  function toggleAuth(view) {
+    $('loginError').style.display='none'; $('regError').style.display='none';
+    if(view==='register'){ $('loginFormView').classList.add('hidden'); $('registerFormView').classList.remove('hidden'); }
+    else { $('loginFormView').classList.remove('hidden'); $('registerFormView').classList.add('hidden'); }
+  }
+
+  $('loginBtn').onclick = () => {
+    const u = $('loginUser').value.trim(); const p = $('loginPass').value.trim();
+    if (u===ADMIN_USER && p===ADMIN_PASS) loginSuccess(false);
+    else {
+      const pts = getPatients();
+      const found = pts.find(x => x.u===u && x.p===p);
+      if(found) loginSuccess(true, u);
+      else $('loginError').style.display = 'block';
+    }
+  };
+
+  $('regCreate').onclick = () => {
+    const u = $('regName').value.trim(); const p = $('regPhone').value.trim();
+    if(!u || !p) return alert("Isi data lengkap!");
+    const pts = getPatients();
+    if(pts.find(x=>x.u===u)) { $('regError').style.display='block'; return; }
+    pts.push({u,p}); savePatients(pts);
+    alert("Berhasil daftar! Silakan login."); toggleAuth('login');
+  };
+
+  function loginSuccess(isPatient, name='') {
+    $('landingOverlay').classList.add('hidden');
+    $('mainApp').classList.remove('hidden');
+    $('.wa-float').classList.add('hidden'); 
+    
+    if (isPatient) {
+      document.body.classList.add('patientMode');
+      $('patientName').value = name; $('patientName').readOnly = true; $('phone').style.display = 'none';
+      $('welcomeMsg').innerHTML = `Halo, ${name}`;
+      $('subMsg').innerText = "Status Pelayanan Anda";
+      $('patientActionHeader').classList.remove('hidden');
+    } else {
+      document.body.classList.remove('patientMode');
+      $('patientName').readOnly = false; $('phone').style.display = 'block';
+      $('welcomeMsg').innerHTML = `Admin Dashboard`;
+      $('subMsg').innerText = "Kelola Data & Keuangan";
+      $('patientActionHeader').classList.add('hidden');
+    }
+    render();
+    if(!isPatient) renderChart();
+  }
+
+  $('logoutBtn').onclick = () => location.reload();
+
+  // 2. LOGIC
+  $('service').onchange = () => {
+    const k = $('service').value;
+    const val = priceMap[k] || 0;
+    $('rawPrice').value = val;
+    $('displayPrice').value = formatRp(val); 
+  };
+
+  const now = new Date();
+  $('date').value = now.toISOString().slice(0,10);
+  $('time').value = now.toTimeString().slice(0,5);
+
+  $('entryForm').onsubmit = (e) => {
+    e.preventDefault();
+    
+    let p = $('displayPrice').value.replace(/\D/g,''); 
+    if(!p || p == 0) p = $('rawPrice').value;
+    
+    const name = $('patientName').value.trim();
+    const svcName = $('service').options[$('service').selectedIndex].text;
+    const loc = $('location').value;
+    const dt = $('date').value;
+    const tm = $('time').value;
+
+    const ent = {
+      id: Date.now(),
+      name: name,
+      phone: $('phone').value.trim(),
+      service: svcName,
+      location: loc,
+      price: Number(p),
+      date: dt,
+      time: tm,
+      status: 'Menunggu'
+    };
+    
+    const arr = getEntries();
+    arr.unshift(ent); saveEntries(arr);
+    render();
+    
+    if(!document.body.classList.contains('patientMode')){
+      renderChart(); $('patientName').value=''; $('phone').value='';
+    }
+
+    // WA Redirect
+    const waText = `Halo Admin Imperium Lab,%0A%0ASaya ingin konfirmasi reservasi:%0A- Nama: *${name}*%0A- Layanan: ${svcName}%0A- Lokasi: *${loc}*%0A- Tgl/Jam: ${dt} / ${tm}%0A- Estimasi Biaya: ${formatRp(p)}%0A%0AMohon diproses. Terima kasih.`;
+    
+    if(confirm("Reservasi disimpan! Lanjut ke WhatsApp untuk konfirmasi?")) {
+        window.open(`https://wa.me/${WA_NUMBER}?text=${waText}`, '_blank');
+    }
+  };
+
+  // 3. RENDER
+  function render() {
+    const fullArr = getEntries();
+    const tbody = $('entriesTable'); tbody.innerHTML = '';
+    const isPatient = document.body.classList.contains('patientMode');
+    const myName = $('patientName').value;
+    
+    let data = isPatient ? fullArr.filter(x => x.name === myName) : fullArr;
+    if(data.length === 0) $('emptyMsg').classList.remove('hidden');
+    else $('emptyMsg').classList.add('hidden');
+
+    if(!isPatient) {
+        let vt=0, rt=0, rm=0; const n=new Date();
+        fullArr.forEach(x=>{
+            let d=new Date(x.date);
+            if(d.toDateString()===n.toDateString()){ vt++; rt+=x.price; }
+            if(d.getMonth()===n.getMonth()) rm+=x.price;
+        });
+        $('visitsToday').textContent=vt;
+        $('revToday').textContent=formatRp(rt);
+        $('revMonth').textContent=formatRp(rm);
+    }
+
+    data.forEach((x) => {
+      const originalIndex = fullArr.findIndex(item => item.id === x.id);
+      
+      let adminBtns = `
+        <button class="badge" style="background:var(--secondary);color:white;border:0;cursor:pointer;margin-right:5px;" onclick="updStatus(${originalIndex})"><i class="fas fa-sync"></i></button>
+        <button class="badge btn-danger" style="border:0;cursor:pointer;" onclick="delEntry(${originalIndex})"><i class="fas fa-trash"></i></button>
+      `;
+      
+      let patientBtns = '';
+      if(isPatient && x.status === 'Menunggu') {
+         patientBtns = `<button class="badge btn-danger" style="border:0;cursor:pointer;" onclick="delEntry(${originalIndex})"><i class="fas fa-times"></i> Batal</button>`;
+      } else if(isPatient) {
+         patientBtns = `<span style="font-size:0.7rem; opacity:0.6;">Diproses</span>`;
+      }
+
+      let tr = document.createElement('tr');
+      if(isPatient) { tr.style.background="rgba(255,255,255,0.02)"; tr.style.borderBottom="10px solid transparent"; }
+      
+      tr.innerHTML = `
+        <td>
+          <div style="font-weight:bold;">${x.date}</div>
+          <div style="font-size:0.8rem;color:var(--secondary);"><i class="far fa-clock"></i> ${x.time}</div>
+        </td>
+        <td>
+            <b>${x.name}</b><br>
+            <span style="font-size:0.75rem; color:var(--gold);"><i class="fas fa-map-marker-alt"></i> ${x.location || 'Klinik'}</span>
+        </td>
+        <td>${x.service}</td>
+        <td style="color:#a7f3d0">${formatRp(x.price)}</td>
+        <td><span class="badge badge-${x.status}">${x.status}</span></td>
+        <td class="admin-only">${adminBtns}</td>
+        ${isPatient ? `<td>${patientBtns}</td>` : ''}
+      `;
+      tbody.appendChild(tr);
+    });
+  }
+
+  window.updStatus = (i) => {
+    const arr=getEntries(); const s=['Menunggu','Konfirmasi','Selesai'];
+    let idx=s.indexOf(arr[i].status);
+    arr[i].status=s[(idx+1)%3];
+    saveEntries(arr); render();
+  };
+
+  window.delEntry = (i) => {
+    if(confirm("Hapus data ini?")) {
+      const arr=getEntries(); arr.splice(i,1); saveEntries(arr);
+      render(); if(!document.body.classList.contains('patientMode')) renderChart();
+    }
+  };
+
+  // 4. CHART
+  let myChart;
+  function renderChart(){
+    const ctx=$('visitChart').getContext('2d');
+    const arr=getEntries(); const lbl=[], dat=[];
+    for(let i=13;i>=0;i--){
+      let d=new Date(); d.setDate(d.getDate()-i);
+      let k=d.toISOString().slice(0,10);
+      lbl.push(k.slice(5)); dat.push(arr.filter(e=>e.date===k).length);
+    }
+    if(myChart) myChart.destroy();
+    
+    let grad=ctx.createLinearGradient(0,0,0,200);
+    grad.addColorStop(0,'rgba(139,92,246,0.5)'); grad.addColorStop(1,'rgba(139,92,246,0)');
+
+    myChart=new Chart(ctx,{
+      type:'line',
+      data:{ labels:lbl, datasets:[{ data:dat, borderColor:'#8b5cf6', backgroundColor:grad, fill:true, tension:0.4 }] },
+      options:{ plugins:{legend:false}, maintainAspectRatio:false, scales:{x:{grid:{display:false}}, y:{beginAtZero:true, grid:{color:'rgba(255,255,255,0.05)'}}} }
+    });
+  }
+</script>
+</body>
+</html>
